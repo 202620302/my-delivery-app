@@ -1,112 +1,123 @@
 import streamlit as st
 import time
 
-# 1. 페이지 기본 설정 및 스타일
-st.set_page_config(page_title="방구석 배달앱", page_icon="🛵", layout="centered")
+# 1. 페이지 기본 설정 (배민 감성 타이틀)
+st.set_page_config(page_title="배달의민족 - 우리 동네 맛집", page_icon="🛵", layout="centered")
 
-# 간단한 CSS로 앱 느낌 내기
+# 2. 배달의민족 브랜드 컬러 및 UI 스타일 적용 (CSS)
 st.markdown("""
     <style>
-    .stButton>button { width: 100%; border-radius: 10px; }
-    .css-118g743 { background-color: #f7f9fa; }
+    /* 배민 시그니처 민트색 (#2AC1BC) 적용 */
+    :root {
+        --baemin-color: #2AC1BC;
+    }
+    .stApp {
+        background-color: #F6F6F6;
+    }
+    h1, h2, h3 {
+        color: #333333;
+        font-family: 'BMJUA', sans-serif;
+    }
+    /* 버튼 스타일 조정 */
+    .stButton>button {
+        width: 100%;
+        background-color: #2AC1BC !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: bold;
+        padding: 0.5rem;
+    }
+    .stButton>button:hover {
+        background-color: #229A96 !important;
+    }
+    /* 가게 카드 스타일 */
+    .store-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+    }
+    .badge-ready {
+        background-color: #E2F6F5;
+        color: #2AC1BC;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .badge-preparing {
+        background-color: #EEEEEE;
+        color: #888888;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. 데이터 세팅 (음식점 및 메뉴)
-RESTAURANTS = {
-    "네오 피자": [
-        {"name": "콤비네이션 피자", "price": 18000},
-        {"name": "치즈 오븐 파스타", "price": 7000},
-        {"name": "페퍼로니 피자", "price": 19000}
-    ],
-    "상큼 치킨": [
-        {"name": "후라이드 치킨", "price": 17000},
-        {"name": "양념 치킨", "price": 18000},
-        {"name": "간장 치킨", "price": 18500}
-    ],
-    "마라 신공": [
-        {"name": "마라탕 (기본)", "price": 12000},
-        {"name": "꿔바로우", "price": 15000}
-    ]
+# 3. 배민 카테고리별 실제 운영 및 입점 예정 데이터 구조
+STORES = {
+    "족발·보쌈": {
+        "가게명": "장인 족발 반반 세트",
+        "상태": "OPEN",
+        "rating": "⭐ 4.9",
+        "tip": "2,000원",
+        "menu": [
+            {"name": "한돈 온족발 (소)", "price": 29000},
+            {"name": "직화 불족발 (소)", "price": 31000},
+            {"name": "쟁반막국수", "price": 7000}
+        ]
+    },
+    "돈까스·회·일식": {
+        "가게명": "동네 돈카츠 & 연어",
+        "상태": "PREPARING",
+        "rating": "⭐ -",
+        "tip": "-",
+        "menu": []
+    },
+    "고기·구이": {
+        "가게명": "삼겹살 배달 전문점",
+        "상태": "PREPARING",
+        "rating": "⭐ -",
+        "tip": "-",
+        "menu": []
+    },
+    "피자·양식": {
+        "가게명": "치즈 폭탄 피자 가든",
+        "상태": "PREPARING",
+        "rating": "⭐ -",
+        "tip": "-",
+        "menu": []
+    },
+    "치킨": {
+        "가게명": "바삭 후라이드 1988",
+        "상태": "PREPARING",
+        "rating": "⭐ -",
+        "tip": "-",
+        "menu": []
+    },
+    "중식": {
+        "가게명": "황금룡 수타 짜장",
+        "상태": "PREPARING",
+        "rating": "⭐ -",
+        "tip": "-",
+        "menu": []
+    }
 }
 
-# 3. 세션 상태(State) 초기화 - 웹 페이지가 새로고침되어도 데이터 유지 목적
+# 세션 상태 초기화
 if "cart" not in st.session_state:
     st.session_state.cart = []
-if "current_store" not in st.session_state:
-    st.session_state.current_store = list(RESTAURANTS.keys())[0]
 if "order_status" not in st.session_state:
     st.session_state.order_status = None
 
-# 4. 웹 화면 레이아웃 구성
-st.title("🛵 방구석 배달 사이트 Prototype")
-st.caption("파이썬으로 구현한 초간단 배달 웹 서비스입니다.")
+# --- 메인 화면 레이아웃 ---
+st.image("https://images.unsplash.com/photo-1526367790999-0150786486a2?w=500&auto=format&fit=crop&q=60", width=120, caption="배달의민족 대리점")
+st.title("배달의민족")
+st.write("📍 **의정부시 의정부동** 주변의 맛집 목록입니다.")
+st.divider()
 
-# 카테고리 / 음식점 선택
-st.subheader("🏪 어떤 맛집에서 주문할까요?")
-selected_store = st.selectbox("가게를 선택하세요", list(RESTAURANTS.keys()))
-
-# 다른 가게를 선택하면 장바구니 초기화 방지 및 현재 가게 업데이트
-if selected_store != st.session_state.current_store:
-    st.session_state.current_store = selected_store
-    st.session_state.cart = []  # 배달앱 특성상 가게가 바뀌면 장바구니를 비움
-    st.toast(f"'{selected_store}'로 가게를 변경하여 장바구니가 비워졌습니다.")
-
-# 메뉴판 출력 및 담기 기능 (⚠️ 이 부분의 오타를 수정했습니다!)
-st.markdown(f"### 🧾 [{st.session_state.current_store}] 메뉴판")
-menu_list = RESTAURANTS[st.session_state.current_store]
-
-for menu in menu_list:
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.write(f"**{menu['name']}**")
-        st.write(f"{menu['price']:,}원")
-    with col2:
-        if st.button("담기", key=f"btn_{menu['name']}"):
-            st.session_state.cart.append(menu)
-            st.toast(f"🛒 {menu['name']}을(를) 장바구니에 담았습니다!")
-    st.divider()
-
-# 5. 사이드바 - 장바구니 및 결제 현황
-with st.sidebar:
-    st.header("🛒 장바구니")
-    
-    if not st.session_state.cart:
-        st.write("장바구니가 비어 있습니다.")
-    else:
-        total_price = 0
-        for idx, item in enumerate(st.session_state.cart):
-            st.write(f"- {item['name']} ({item['price']:,}원)")
-            total_price += item['price']
-        
-        st.divider()
-        st.subheader(f"총 금액: {total_price:,}원")
-        
-        if st.button("💳 주문 및 결제하기", type="primary"):
-            st.session_state.order_status = "결제 완료"
-            st.session_state.cart = [] # 주문 완료 후 장바구니 비우기
-            st.rerun()
-
-# 6. 실시간 배달 상태 표시 시뮬레이션
-if st.session_state.order_status:
-    st.success("🎉 주문이 정상적으로 접수되었습니다!")
-    
-    status_box = st.empty()
-    progress_bar = st.progress(0)
-    
-    # 배달 단계 시뮬레이션 코드
-    steps = [
-        ("👨‍🍳 가게에서 음식을 조리하고 있습니다...", 25),
-        ("🛵 라이더가 배정을 받고 출발했습니다!", 60),
-        ("🏁 배달이 완료되었습니다! 맛있게 드세요! 🎉", 100)
-    ]
-    
-    for text, percentage in steps:
-        status_box.markdown(f"### 현재 배달 상태:\n**{text}**")
-        progress_bar.progress(percentage)
-        time.sleep(2)  # 실제 상황처럼 가상 딜레이 부여
-        
-    # 시뮬레이션 종료 후 상태 초기화 버튼
-    if st.button("새로 주문하기"):
-        st.session_state.order_status = None
-        st.rerun()
+# 배민 스타일
