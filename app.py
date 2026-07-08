@@ -16,7 +16,6 @@ st.markdown("""
     }
     h1, h2, h3 {
         color: #333333;
-        font-family: 'BMJUA', sans-serif;
     }
     /* 버튼 스타일 조정 */
     .stButton>button {
@@ -37,12 +36,12 @@ st.markdown("""
         padding: 15px;
         border-radius: 12px;
         box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
     .badge-ready {
         background-color: #E2F6F5;
         color: #2AC1BC;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
         font-weight: bold;
@@ -50,7 +49,7 @@ st.markdown("""
     .badge-preparing {
         background-color: #EEEEEE;
         color: #888888;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
         font-weight: bold;
@@ -115,9 +114,92 @@ if "order_status" not in st.session_state:
     st.session_state.order_status = None
 
 # --- 메인 화면 레이아웃 ---
-st.image("https://images.unsplash.com/photo-1526367790999-0150786486a2?w=500&auto=format&fit=crop&q=60", width=120, caption="배달의민족 대리점")
-st.title("배달의민족")
+# 에러 유발 가능성이 있는 외부 이미지 주소를 제거하고 깔끔한 타이틀로 대체했습니다.
+st.markdown("<h1 style='color: #2AC1BC; font-size: 40px; margin-bottom: 0px;'>🛵 배달의민족</h1>", unsafe_allow_html=True)
 st.write("📍 **의정부시 의정부동** 주변의 맛집 목록입니다.")
 st.divider()
 
-# 배민 스타일
+# 배민 스타일 카테고리 탭 구성
+st.subheader("오늘 어떤 메뉴가 당기시나요? 🍕")
+tabs = st.tabs(list(STORES.keys()))
+
+for i, category in enumerate(STORES.keys()):
+    with tabs[i]:
+        store_info = STORES[category]
+        
+        # 입점 예정인 가게 디자인 처리
+        if store_info["상태"] == "PREPARING":
+            st.markdown(f"""
+            <div class="store-card">
+                <span class="badge-preparing">⏱️ 입점 예정</span>
+                <h3 style='margin: 5px 0; color: #333333;'>{store_info['가게명']}</h3>
+                <p style='color: #888888; font-size: 14px; margin: 0;'>현재 서비스 준비 중인 매장입니다. 조금만 기다려주세요!</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        # 현재 이용 가능한 유일한 테스트 매장
+        else:
+            st.markdown(f"""
+            <div class="store-card">
+                <span class="badge-ready">● 주문 가능</span>
+                <h3 style='margin: 5px 0; color: #333333;'>{store_info['가게명']}</h3>
+                <p style='margin: 0; font-size: 14px; color: #555555;'>평점: {store_info['rating']} | 배달팁: {store_info['tip']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.write("👇 **아래 메뉴를 장바구니에 담아 테스트해보세요!**")
+            
+            # 메뉴 목록 출력 및 장바구니 담기
+            for menu in store_info["menu"]:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"**{menu['name']}**")
+                    st.write(f"{menu['price']:,}원")
+                with col2:
+                    if st.button("담기", key=f"add_{menu['name']}"):
+                        st.session_state.cart.append(menu)
+                        st.toast(f"🛒 장바구니에 {menu['name']} 추가!")
+                st.divider()
+
+# 사이드바 - 배민 장바구니 UI
+with st.sidebar:
+    st.header("🛒 배민 장바구니")
+    
+    if not st.session_state.cart:
+        st.write("장바구니가 비어 있습니다.")
+    else:
+        total_price = 0
+        for item in st.session_state.cart:
+            st.write(f"• {item['name']} ({item['price']:,}원)")
+            total_price += item['price']
+            
+        st.divider()
+        st.subheader(f"총 결제금액: {total_price:,}원")
+        
+        if st.button("🛵 배달 주문하기", type="primary"):
+            st.session_state.order_status = "접수 완료"
+            st.session_state.cart = []
+            st.rerun()
+
+# 실시간 배달 애니메이션
+if st.session_state.order_status:
+    st.balloons()
+    st.success("주문이 성공적으로 접수되었습니다!")
+    
+    status_area = st.empty()
+    progress = st.progress(0)
+    
+    steps = [
+        ("👨‍🍳 가게에서 맛있는 음식을 조리하고 있어요!", 30),
+        ("🛵 라이더가 음식을 픽업하여 이웃님께 출발했습니다!", 70),
+        ("🔔 딩동! 배달이 완료되었습니다. 맛있게 드세요! 🎉", 100)
+    ]
+    
+    for text, percent in steps:
+        status_area.markdown(f"### 배민 실시간 현황\n**{text}**")
+        progress.progress(percent)
+        time.sleep(2)
+        
+    if st.button("추가 주문하기"):
+        st.session_state.order_status = None
+        st.rerun()
