@@ -52,8 +52,8 @@ if selected_store != st.session_state.current_store:
     st.session_state.cart = []  # 배달앱 특성상 가게가 바뀌면 장바구니를 비움
     st.toast(f"'{selected_store}'로 가게를 변경하여 장바구니가 비워졌습니다.")
 
-# 메뉴판 출력 및 담기 기능
-st.markdown(### f"🧾 [{st.session_state.current_store}] 메뉴판")
+# 메뉴판 출력 및 담기 기능 (⚠️ 이 부분의 오타를 수정했습니다!)
+st.markdown(f"### 🧾 [{st.session_state.current_store}] 메뉴판")
 menu_list = RESTAURANTS[st.session_state.current_store]
 
 for menu in menu_list:
