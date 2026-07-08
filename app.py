@@ -2,170 +2,80 @@ import streamlit as st
 import time
 
 # 1. 페이지 기본 설정
-st.set_page_config(page_title="배달의민족 외식업광장 벤치마킹", page_icon="🛵", layout="wide")
+st.set_page_config(page_title="배달의민족 - 우리 동네 맛집", page_icon="🛵", layout="centered")
 
-# 2. 상단 메뉴바 HTML & CSS (마우스 올리면 서브메뉴가 쫙 뜨는 효과)
+# 2. 배달의민족 스타일 CSS 적용
 st.markdown("""
     <style>
-    /* 기본 배경 및 폰트 설정 */
+    :root { --baemin-color: #2AC1BC; }
     .stApp { background-color: #F6F6F6; }
-    
-    /* 상단 메뉴바 전체 컨테이너 */
-    .navbar {
-        background-color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px 0px;
-        border-bottom: 1px solid #EAEAEA;
-        position: relative;
-        z-index: 9999;
-    }
-    
-    /* 로고 스타일 */
-    .nav-logo {
-        font-size: 22px;
+    h1, h2, h3 { color: #333333; }
+    .stButton>button {
+        width: 100%;
+        background-color: #2AC1BC !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
         font-weight: bold;
-        color: #2AC1BC;
-        margin-right: 50px;
-        text-decoration: none;
+        padding: 0.5rem;
     }
-    
-    /* 메인 메뉴 아이템 목록 */
-    .nav-links {
-        display: flex;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-    
-    /* 각 메인 메뉴 아이템 */
-    .nav-item {
-        position: relative;
-        padding: 15px 25px;
-    }
-    
-    .nav-item > a {
-        text-decoration: none;
-        color: #333333;
-        font-weight: bold;
-        font-size: 16px;
-    }
-    
-    .nav-item:hover > a {
-        color: #2AC1BC;
-    }
-    
-    /* ⭐ 마우스 올렸을 때 나오는 서브 메뉴 (기본 상태는 숨김) */
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: white;
-        min-width: 160px;
-        box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        padding: 10px 0;
-        list-style: none;
-    }
-    
-    /* 서브 메뉴의 링크 스타일 */
-    .dropdown-menu a {
-        color: #555555;
-        padding: 10px 20px;
-        text-decoration: none;
-        display: block;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-    
-    .dropdown-menu a:hover {
-        background-color: #E2F6F5;
-        color: #2AC1BC;
-    }
-    
-    /* ⭐ 마우스 오버 시 서브메뉴 보이게 하는 핵심 CSS 효과 */
-    .nav-item:hover .dropdown-menu {
-        display: block;
-    }
-    
-    /* 가게 카드 및 배너 스타일 */
+    .stButton>button:hover { background-color: #229A96 !important; }
     .store-card {
         background-color: white;
-        padding: 20px;
+        padding: 15px;
         border-radius: 12px;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.03);
-        margin-bottom: 20px;
+        box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
     }
     .badge-ready { background-color: #E2F6F5; color: #2AC1BC; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .badge-preparing { background-color: #EEEEEE; color: #888888; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .hero-banner {
-        background-color: #D2F2F1;
-        padding: 40px;
-        border-radius: 16px;
-        margin-bottom: 30px;
+    .event-card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid #2AC1BC;
+        margin-bottom: 15px;
     }
     </style>
-    
-    <div class="navbar">
-        <a href="?page=home" class="nav-logo">🛵 배민외식업광장</a>
-        <ul class="nav-links">
-            <li class="nav-item">
-                <a href="#">배민 입점·운영</a>
-                <ul class="dropdown-menu">
-                    <li><a href="?page=home">▶ 우리 동네 맛집 (홈)</a></li>
-                    <li><a href="?page=intro">입점 안내 가이드</a></li>
-                </ul>
-            </li>
-            <li class="nav-item">
-                <a href="#">혜택·이벤트</a>
-                <ul class="dropdown-menu">
-                    <li><a href="?page=event">🎁 진행 중인 이벤트</a></li>
-                    <li><a href="?page=event">신규 성장 패키지</a></li>
-                </ul>
-            </li>
-            <li class="nav-item">
-                <a href="#">가게 운영 지원</a>
-                <ul class="dropdown-menu">
-                    <li><a href="?page=faq">🙋 자주 묻는 질문 (FAQ)</a></li>
-                    <li><a href="?page=faq">1:1 빠른 문의</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-    <br>
     """, unsafe_allow_html=True)
 
-# 3. URL 주소 뒤의 파라미터(?page=...)를 감지하여 현재 페이지 알아내기
-query_params = st.query_params
-current_page = query_params.get("page", "home")
-
-# 데이터 구조 (가게 정보)
+# 3. 데이터 구조 (가게 정보)
 STORES = {
-    "족발·보쌈": {"가게명": "장인 족발 반반 세트", "상태": "OPEN", "rating": "⭐ 4.9", "tip": "2,000원", "menu": [{"name": "한돈 온족발 (소)", "price": 29000}, {"name": "직화 불족발 (소)", "price": 31000}]},
+    "족발·보쌈": {
+        "가게명": "장인 족발 반반 세트", "상태": "OPEN", "rating": "⭐ 4.9", "tip": "2,000원",
+        "menu": [
+            {"name": "한돈 온족발 (소)", "price": 29000},
+            {"name": "직화 불족발 (소)", "price": 31000},
+            {"name": "쟁반막국수", "price": 7000}
+        ]
+    },
+    "돈까스·회·일식": {"가게명": "동네 돈카츠 & 연어", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []},
+    "고기·구이": {"가게명": "삼겹살 배달 전문점", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []},
+    "피자·양식": {"가게명": "치즈 폭탄 피자 가든", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []},
     "치킨": {"가게명": "바삭 후라이드 1988", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []},
-    "피자·양식": {"가게명": "치즈 폭탄 피자 가든", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []}
+    "중식": {"가게명": "황금룡 수타 짜장", "상태": "PREPARING", "rating": "⭐ -", "tip": "-", "menu": []}
 }
 
+# 세션 상태 초기화
 if "cart" not in st.session_state: st.session_state.cart = []
 if "order_status" not in st.session_state: st.session_state.order_status = None
 
-# --- 4. 페이지 전환 및 렌더링 ---
+# --- 4. 사이드바 페이지 네비게이션 메뉴 ---
+with st.sidebar:
+    st.markdown("<h2 style='color: #2AC1BC;'>메뉴 바로가기</h2>", unsafe_allow_html=True)
+    # 라디오 버튼을 이용해 사용자가 페이지를 선택하도록 유도
+    page = st.radio("이동할 페이지를 선택하세요", ["🏠 홈 (가게 목록)", "🎁 진행 중인 이벤트", "🙋 고객센터 / FAQ"])
+    st.divider()
 
-# [1] 홈 화면 (가게 목록)
-if current_page == "home":
-    # 배민 신규 성장 패키지 스타일의 중앙 배너 광고
-    st.markdown("""
-    <div class="hero-banner">
-        <span style="color: #2AC1BC; font-weight: bold; font-size:14px;">신규 파트너 주문 수 상승!</span>
-        <h2 style="margin: 10px 0 5px 0; font-size: 28px;">🚀 신규 성장 패키지 출시</h2>
-        <p style="color: #666; margin: 0;">가게 등록 첫 달 주문 수가 평균 <b>4.8배</b> 증가하는 효과를 직접 경험해 보세요!</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.subheader("💡 오늘 마음에 드는 카테고리를 선택하세요")
+# --- 5. 페이지별 화면 렌더링 ---
+
+# [페이지 1: 홈 화면]
+if page == "🏠 홈 (가게 목록)":
+    st.markdown("<h1 style='color: #2AC1BC; font-size: 40px; margin-bottom: 0px;'>🛵 배달의민족</h1>", unsafe_allow_html=True)
+    st.write("📍 **의정부시 의정부동** 주변의 맛집 목록입니다.")
+    st.divider()
+
+    st.subheader("오늘 어떤 메뉴가 당기시나요? 🍕")
     tabs = st.tabs(list(STORES.keys()))
 
     for i, category in enumerate(STORES.keys()):
@@ -188,53 +98,95 @@ if current_page == "home":
                 </div>
                 """, unsafe_allow_html=True)
                 
+                st.write("👇 **아래 메뉴를 장바구니에 담아 테스트해보세요!**")
                 for menu in store_info["menu"]:
-                    col1, col2 = st.columns([4, 1])
+                    col1, col2 = st.columns([3, 1])
                     with col1:
-                        st.write(f"**{menu['name']}** - {menu['price']:,}원")
+                        st.write(f"**{menu['name']}**")
+                        st.write(f"{menu['price']:,}원")
                     with col2:
                         if st.button("담기", key=f"add_{menu['name']}"):
                             st.session_state.cart.append(menu)
-                            st.toast(f"🛒 장바구니 추가 완료!")
+                            st.toast(f"🛒 장바구니에 {menu['name']} 추가!")
+                    st.divider()
 
-    # 하단 장바구니 간이 노출
-    if st.session_state.cart:
-        st.divider()
-        st.subheader("🛒 현재 장바구니 내역")
-        for item in st.session_state.cart:
-            st.write(f"- {item['name']} ({item['price']:,}원)")
-        if st.button("💳 주문하기 (시뮬레이션)"):
-            st.balloons()
-            st.success("주문 완료! 라이더가 곧 배정됩니다.")
-            st.session_state.cart = []
+    # 장바구니 기능을 사이드바 하단에 결합
+    with st.sidebar:
+        st.header("🛒 배민 장바구니")
+        if not st.session_state.cart:
+            st.write("장바구니가 비어 있습니다.")
+        else:
+            total_price = 0
+            for item in st.session_state.cart:
+                st.write(f"• {item['name']} ({item['price']:,}원)")
+                total_price += item['price']
+            st.divider()
+            st.subheader(f"총 결제금액: {total_price:,}원")
+            if st.button("🛵 배달 주문하기", type="primary"):
+                st.session_state.order_status = "접수 완료"
+                st.session_state.cart = []
+                st.rerun()
 
-# [2] 이벤트 페이지
-elif current_page == "event":
-    st.title("🎁 진행 중인 혜택 & 이벤트")
-    st.write("사장님과 이웃 모두를 위한 풍성한 이벤트를 확인하세요.")
+    # 주문 진행 상태 애니메이션
+    if st.session_state.order_status:
+        st.balloons()
+        st.success("주문이 성공적으로 접수되었습니다!")
+        status_area = st.empty()
+        progress = st.progress(0)
+        steps = [
+            ("👨‍🍳 가게에서 맛있는 음식을 조리하고 있어요!", 30),
+            ("🛵 라이더가 음식을 픽업하여 이웃님께 출발했습니다!", 70),
+            ("🔔 딩동! 배달이 완료되었습니다. 맛있게 드세요! 🎉", 100)
+        ]
+        for text, percent in steps:
+            status_area.markdown(f"### 배민 실시간 현황\n**{text}**")
+            progress.progress(percent)
+            time.sleep(1.5)
+        if st.button("추가 주문하기"):
+            st.session_state.order_status = None
+            st.rerun()
+
+# [페이지 2: 이벤트 페이지]
+elif page == "🎁 진행 중인 이벤트":
+    st.title("🎁 배민 이벤트존")
+    st.write("지금만 참여할 수 있는 특별한 혜택을 놓치지 마세요!")
     st.divider()
+
     st.markdown("""
-    <div class="store-card" style="border-left: 5px solid #2AC1BC;">
-        <h3>🎉 중개이용료 14일간 100% 전액 지원 패키지</h3>
-        <p style="color:#666;">지금 온라인으로 입점 신청을 하시면 초기 정착 지원 혜택을 100% 드립니다.</p>
+    <div class="event-card">
+        <h3>🎉 신규 가입 첫 주문 10,000원 쿠폰팩</h3>
+        <p style='color: #666;'>배민이 처음이신가요? 지금 가입하면 첫 주문 즉시 사용할 수 있는 만원 할인 쿠폰을 드립니다.</p>
+        <small style='color: #999;'>기간: 2026.07.01 ~ 2026.07.31</small>
     </div>
-    <div class="store-card" style="border-left: 5px solid #2AC1BC;">
-        <h3>🔥 우리가게클릭 스마트모드 30일 무료 체험</h3>
-        <p style="color:#666;">추가 홍보비 최대 10만 원 상당의 혜택을 드리는 찬스!</p>
+    <div class="event-card">
+        <h3>🛵 매주 금요일은 배달팁 0원 데이!</h3>
+        <p style='color: #666;'>금요일 퇴근길, 어떤 메뉴를 시켜도 배달팁은 배민이 쏩니다! (일부 매장 제외)</p>
+        <small style='color: #999;'>기간: 연중무휴</small>
     </div>
     """, unsafe_allow_html=True)
+    
+    if st.button("쿠폰 전부 받기 🎫"):
+        st.balloons()
+        st.toast("모든 쿠폰이 발급되었습니다! 홈 화면에서 사용해보세요.")
 
-# [3] 고객센터 페이지
-elif current_page == "faq":
+# [페이지 3: 고객센터 페이지]
+elif page == "🙋 고객센터 / FAQ":
     st.title("🙋 무엇을 도와드릴까요?")
-    st.write("배민 외식업광장 고객 지원 센터센터입니다.")
+    st.write("방구석 배달앱 고객센터입니다. 자주 묻는 질문을 확인해보세요.")
     st.divider()
-    with st.expander("❓ 입점 신청 서류는 무엇이 필요한가요?"):
-        st.write("사업자등록증 사본, 영업신고증 사본, 대표자 명의 통장 사본이 필수로 요구됩니다.")
-    with st.expander("❓ 광고 비용 정산은 언제 되나요?"):
-        st.write("주간 단위로 정산되어 매주 수요일에 지정하신 계좌로 입금됩니다.")
 
-# [4] 임시 안내 페이지
-elif current_page == "intro":
-    st.title("📄 배민 입점 안내 가이드")
-    st.info("현재 상세 가이드 문서를 준비 중입니다. 신속히 업데이트하겠습니다!")
+    with st.expander("❓ 주문을 취소하고 싶어요."):
+        st.write("주문 접수 완료 전에는 앱 내에서 직접 취소가 가능합니다. 다만, 가게에서 음식을 조리하기 시작한 이후에는 취소가 어려우니 매장으로 직접 연락해 주셔야 합니다.")
+        
+    with st.expander("❓ 배달 주소를 잘못 입력했어요."):
+        st.write("라이더가 출발하기 전이라면 고객센터 전화를 통해 주소 변경이 가능합니다. 빠르게 전화를 주셔야 조치가 가능합니다.")
+        
+    with st.expander("❓ 결제 영수증은 어디서 발급받나요?"):
+        st.write("[마이배민 -> 주문 내역]에서 각 주문별 전자 영수증 다운로드 및 이메일 발송이 가능합니다.")
+
+    st.divider()
+    st.subheader("📞 1:1 빠른 문의")
+    st.text_input("이메일 주소", placeholder="답변받으실 이메일을 입력하세요.")
+    st.text_area("문의 내용", placeholder="불편하신 점이나 문의사항을 입력해 주세요.")
+    if st.button("문의하기 제출"):
+        st.success("문의가 성공적으로 접수되었습니다. 담당자가 확인 후 답변드리겠습니다!")
